@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+INSTALL_DIR="${TREEMUX_INSTALL_DIR:-$HOME/.config/bin}"
+
+mkdir -p "$INSTALL_DIR"
+
+cd "$ROOT_DIR"
+go build -o "$INSTALL_DIR/treemux" ./cmd/treemux
+
+printf 'Installed treemux to %s/treemux\n' "$INSTALL_DIR"
