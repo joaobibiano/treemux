@@ -166,6 +166,13 @@ func KillWindow(target string) error {
 	return nil
 }
 
+func SelectWindow(target string) error {
+	if _, err := run("select-window", "-t", target); err != nil {
+		return fmt.Errorf("select tmux window %s: %w", target, err)
+	}
+	return nil
+}
+
 func run(args ...string) (string, error) {
 	cmd := exec.Command("tmux", args...)
 

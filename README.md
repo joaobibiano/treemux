@@ -17,6 +17,7 @@ Current commands:
 - `treemux add`
 - `treemux remove`
 - `treemux rm`
+- `treemux join`
 
 Current config support:
 
@@ -86,6 +87,14 @@ treemux remove my-feature --force
 
 Flags can be placed before or after the positional argument.
 
+Join the tmux window of an existing worktree:
+
+```sh
+treemux join my-feature
+```
+
+Accepts the worktree handle, branch name, or full path.
+
 ## Config Example
 
 ```yaml
@@ -109,6 +118,7 @@ panes:
 - `pre_remove` is optional.
 - built-in `node_modules` cleanup still runs on remove for Node-style repos.
 - explicit `--name` bypasses `worktree_prefix`.
+- tmux window names are unprefixed by default. Set `window_prefix` if you want one.
 
 ## Why
 

@@ -31,6 +31,8 @@ type RemoveOptions struct {
 	KeepBranch bool
 }
 
+type JoinOptions struct{}
+
 func (Service) Add(branch string, opts AddOptions) error {
 	startDir, err := os.Getwd()
 	if err != nil {
@@ -174,6 +176,10 @@ func (Service) Remove(name string, opts RemoveOptions) error {
 		return err
 	}
 
+	if err := gitutil.PruneWorktrees(currentRoot); err != nil {
+		return err
+	}
+
 	worktrees, err := gitutil.WorktreeList(currentRoot)
 	if err != nil {
 		return err
@@ -207,12 +213,15 @@ func (Service) Remove(name string, opts RemoveOptions) error {
 	effectiveWorkingDir := existingDirOrFallback(targetConfigDir, target.Path)
 	env := worktreeEnv(targetConfigDir, mainRoot, target.Path, handle, target.Branch)
 	if err := runCommands(cfg.PreRemove, effectiveWorkingDir, env); err != nil {
-		return fmt.Errorf("run pre_remove hooks: %w", err)
+		if !opts.Force {
+			return fmt.Errorf("run pre_remove hooks: %w", err)
+		}
+		fmt.Fprintf(os.Stderr, "treemux: pre_remove hooks failed, continuing due to --force: %v\n", err)
 	}
 
 	if cleanup.LooksLikeNodeProject(target.Path) {
 		if err := cleanup.RemoveNodeModules(target.Path); err != nil {
-			return fmt.Errorf("cleanup node_modules: %w", err)
+			fmt.Fprintf(os.Stderr, "treemux: node_modules cleanup failed, continuing: %v\n", err)
 		}
 	}
 
@@ -238,6 +247,49 @@ func (Service) Remove(name string, opts RemoveOptions) error {
 	}
 
 	return nil
+}
+
+func (Service) Join(name string, _ JoinOptions) error {
+	startDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("resolve current directory: %w", err)
+	}
+
+	currentRoot, err := gitutil.RepoRoot(startDir)
+	if err != nil {
+		return err
+	}
+
+	worktrees, err := gitutil.WorktreeList(currentRoot)
+	if err != nil {
+		return err
+	}
+
+	cfg, err := config.Load(currentRoot, startDir)
+	if err != nil {
+		return err
+	}
+
+	target, err := gitutil.MatchWorktree(worktrees, name, startDir)
+	if err != nil {
+		return err
+	}
+
+	if _, err := tmux.CurrentSession(); err != nil {
+		return err
+	}
+
+	handle := filepath.Base(target.Path)
+	windowName := WindowName(cfg.WindowPrefix, handle)
+	window, err := tmux.FindWindow(handle, target.Path, windowName)
+	if err != nil {
+		return err
+	}
+	if window == nil {
+		return fmt.Errorf("no tmux window found for worktree %q; run `treemux add` or create a window manually", handle)
+	}
+
+	return tmux.SelectWindow(window.Target)
 }
 
 func resolveBaseBranch(repoRoot, startDir string, cfg config.Config, opts AddOptions) (string, error) {

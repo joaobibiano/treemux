@@ -150,6 +150,13 @@ func AddWorktree(repoRoot, path, branch, base string) error {
 	return nil
 }
 
+func PruneWorktrees(repoRoot string) error {
+	if _, err := run(repoRoot, "git", "worktree", "prune"); err != nil {
+		return fmt.Errorf("prune worktrees: %w", err)
+	}
+	return nil
+}
+
 func RemoveWorktree(repoRoot, path string, force bool) error {
 	args := []string{"git", "worktree", "remove"}
 	if force {

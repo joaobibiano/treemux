@@ -24,6 +24,8 @@ func main() {
 		err = runAdd(service, os.Args[2:])
 	case "remove", "rm":
 		err = runRemove(service, os.Args[2:])
+	case "join":
+		err = runJoin(service, os.Args[2:])
 	case "help", "-h", "--help":
 		usage()
 		return
@@ -100,6 +102,21 @@ func runRemove(service treemux.Service, args []string) error {
 	return service.Remove(name, opts)
 }
 
+func runJoin(service treemux.Service, args []string) error {
+	fs := flag.NewFlagSet("join", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	if fs.NArg() != 1 {
+		return fmt.Errorf("usage: treemux join <name>")
+	}
+
+	return service.Join(fs.Arg(0), treemux.JoinOptions{})
+}
+
 func reorderInterspersedFlags(args []string, knownFlags map[string]bool) []string {
 	flags := make([]string, 0, len(args))
 	positionals := make([]string, 0, len(args))
@@ -143,10 +160,12 @@ func usage() {
 Usage:
   treemux add <branch> [options]
   treemux remove [name] [options]
+  treemux join <name>
 
 Commands:
   add       Create a worktree and tmux window
   remove    Remove a worktree, tmux window, and branch
   rm        Alias for remove
+  join      Select the tmux window for an existing worktree
 `)
 }
