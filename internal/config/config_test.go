@@ -102,8 +102,8 @@ func TestLoadAppliesDefaultsWithoutConfig(t *testing.T) {
 	if cfg.WorktreeNaming != "full" {
 		t.Fatalf("expected default naming full, got %q", cfg.WorktreeNaming)
 	}
-	if cfg.WindowPrefix != "wm-" {
-		t.Fatalf("expected default window prefix wm-, got %q", cfg.WindowPrefix)
+	if cfg.WindowPrefix != "" {
+		t.Fatalf("expected empty default window prefix, got %q", cfg.WindowPrefix)
 	}
 	if cfg.Agent != "claude" {
 		t.Fatalf("expected default agent claude, got %q", cfg.Agent)

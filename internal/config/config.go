@@ -118,9 +118,6 @@ func Load(repoRoot, startDir string) (Config, error) {
 	if cfg.WorktreeNaming == "" {
 		cfg.WorktreeNaming = "full"
 	}
-	if cfg.WindowPrefix == "" {
-		cfg.WindowPrefix = "wm-"
-	}
 	if cfg.Agent == "" {
 		cfg.Agent = "claude"
 	}
