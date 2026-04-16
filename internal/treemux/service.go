@@ -230,11 +230,6 @@ func (Service) Remove(name string, opts RemoveOptions) error {
 	if err != nil {
 		return err
 	}
-	if window != nil {
-		if err := tmux.KillWindow(window.Target); err != nil {
-			return err
-		}
-	}
 
 	if err := gitutil.RemoveWorktree(mainRoot, target.Path, opts.Force); err != nil {
 		return err
@@ -243,6 +238,12 @@ func (Service) Remove(name string, opts RemoveOptions) error {
 	if !opts.KeepBranch && target.Branch != "" {
 		if err := gitutil.DeleteBranch(mainRoot, target.Branch, opts.Force); err != nil {
 			return fmt.Errorf("removed worktree but failed to delete branch %q: %w", target.Branch, err)
+		}
+	}
+
+	if window != nil {
+		if err := tmux.KillWindow(window.Target); err != nil {
+			return err
 		}
 	}
 
