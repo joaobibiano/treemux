@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -158,13 +159,14 @@ func PruneWorktrees(repoRoot string) error {
 }
 
 func RemoveWorktree(repoRoot, path string, force bool) error {
-	args := []string{"git", "worktree", "remove"}
 	if force {
-		args = append(args, "--force")
+		if err := os.RemoveAll(path); err != nil {
+			return fmt.Errorf("remove worktree directory: %w", err)
+		}
+		return PruneWorktrees(repoRoot)
 	}
-	args = append(args, path)
 
-	_, err := run(repoRoot, args[0], args[1:]...)
+	_, err := run(repoRoot, "git", "worktree", "remove", path)
 	if err != nil {
 		return fmt.Errorf("remove worktree: %w", err)
 	}

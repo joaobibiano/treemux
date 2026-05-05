@@ -236,7 +236,7 @@ func (Service) Remove(name string, opts RemoveOptions) error {
 	}
 
 	if !opts.KeepBranch && target.Branch != "" {
-		if err := gitutil.DeleteBranch(mainRoot, target.Branch, opts.Force); err != nil {
+		if err := gitutil.DeleteBranch(mainRoot, target.Branch, true); err != nil {
 			return fmt.Errorf("removed worktree but failed to delete branch %q: %w", target.Branch, err)
 		}
 	}
